@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Apps Hub</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --text-color: #e6edf3;
+            --accent-color: #58a6ff;
+            --secondary-color: #30363d;
+            --success-color: #3fb950;
+            --warning-color: #d29922;
+            --danger-color: #f85149;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-mono);
+            line-height: 1.5;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .terminal {
+            border: 1px solid var(--secondary-color);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .terminal-header {
+            background-color: var(--secondary-color);
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .terminal-title {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .terminal-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .terminal-control {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .terminal-control.close {
+            background-color: var(--danger-color);
+        }
+        
+        .terminal-control.minimize {
+            background-color: var(--warning-color);
+        }
+        
+        .terminal-control.maximize {
+            background-color: var(--success-color);
+        }
+        
+        .terminal-body {
+            padding: 16px;
+            font-size: 14px;
+        }
+        
+        .prompt {
+            color: var(--success-color);
+            margin-bottom: 12px;
+        }
+        
+        .prompt::before {
+            content: "user@terminal:~$ ";
+        }
+        
+        .command {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        
+        .app-list {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 12px;
+        }
+        
+        .app-item {
+            background-color: rgba(48, 54, 61, 0.5);
+            border: 1px solid var(--secondary-color);
+            border-radius: 4px;
+            padding: 12px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .app-item:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .app-item:active {
+            transform: translateY(0);
+        }
+        
+        .app-name {
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .app-name::before {
+            content: ">";
+            margin-right: 8px;
+            color: var(--success-color);
+        }
+        
+        .app-desc {
+            font-size: 12px;
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+        
+        .app-tag {
+            display: inline-block;
+            background-color: rgba(88, 166, 255, 0.2);
+            color: var(--accent-color);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin-right: 4px;
+        }
+        
+        .search-container {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-prompt {
+            color: var(--success-color);
+            margin-right: 10px;
+        }
+        
+        .search-input {
+            background-color: transparent;
+            border: none;
+            border-bottom: 1px solid var(--secondary-color);
+            color: var(--text-color);
+            font-family: var(--font-mono);
+            padding: 5px;
+            flex-grow: 1;
+            outline: none;
+            font-size: 14px;
+        }
+        
+        .search-input:focus {
+            border-bottom-color: var(--accent-color);
+        }
+        
+        .terminal-output {
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+        
+        .blink {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        .timestamp {
+            color: #6e7681;
+            font-size: 10px;
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+        }
+        
+        @media (max-width: 600px) {
+            .app-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="terminal-controls">
+                <div class="terminal-control close"></div>
+                <div class="terminal-control minimize"></div>
+                <div class="terminal-control maximize"></div>
+            </div>
+            <div class="terminal-title">apps-hub.sh</div>
+            <div></div>
+        </div>
+        <div class="terminal-body">
+            <div class="terminal-output">
+<span style="color: #58a6ff;">                      _    _ _   _ ____  </span>
+<span style="color: #58a6ff;">     /\             | |  | | | | |  _ \ </span>
+<span style="color: #3fb950;">    /  \   _ __  ___| |__| | | | | |_) |</span>
+<span style="color: #3fb950;">   / /\ \ | '_ \/ __|  __  | | | |  _ < </span>
+<span style="color: #d29922;">  / ____ \| |_) \__ \ |  | | |_| | |_) |</span>
+<span style="color: #f85149;"> /_/    \_\ .__/|___/_|  |_|\___/|____/ </span>
+<span style="color: #f85149;">          | |                           </span>
+<span style="color: #f85149;">          |_|                           </span>
+
+Терминальный хаб для доступа к вашим веб-приложениям
+Версия 1.0.0 | Запущен: <span id="current-date">05.03.2025</span>
+            </div>
+            
+            <div class="prompt"><span class="command">ls</span> -la apps/</div>
+            
+            <div class="search-container">
+                <span class="search-prompt">find:</span>
+                <input type="text" class="search-input" placeholder="Поиск приложений..." id="search-input">
+                <span class="blink">_</span>
+            </div>
+            
+            <div class="app-list" id="app-list">
+                <!-- Финансовый калькулятор -->
+                <div class="app-item" data-tags="finance calculator deposit money interest">
+                    <div class="app-name">saver-calc.html</div>
+                    <div class="app-desc">Калькулятор доходности по вкладу со сложным процентом</div>
+                    <span class="app-tag">финансы</span>
+                    <span class="app-tag">калькулятор</span>
+                    <span class="timestamp">Изменен: 05.03.2025</span>
+                    <a href="saver-calc.html" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0;"></a>
+                </div>
+                
+                <!-- Список задач -->
+                <div class="app-item" data-tags="todo tasks productivity list">
+                    <div class="app-name">todo-list.html</div>
+                    <div class="app-desc">Простое приложение для управления задачами</div>
+                    <span class="app-tag">продуктивность</span>
+                    <span class="app-tag">утилиты</span>
+                    <span class="timestamp">Изменен: 01.03.2025</span>
+                    <a href="todo-list.html" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0;"></a>
+                </div>
+                
+                <!-- Конвертер единиц -->
+                <div class="app-item" data-tags="converter units measurement tools utility">
+                    <div class="app-name">unit-converter.html</div>
+                    <div class="app-desc">Универсальный конвертер единиц измерения</div>
+                    <span class="app-tag">инструменты</span>
+                    <span class="app-tag">утилиты</span>
+                    <span class="timestamp">Изменен: 28.02.2025</span>
+                    <a href="unit-converter.html" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0;"></a>
+                </div>
+                
+                <!-- Ипотечный калькулятор -->
+                <div class="app-item" data-tags="mortgage calculator finance loan home">
+                    <div class="app-name">mortgage-calculator.html</div>
+                    <div class="app-desc">Расчет ежемесячных платежей и общей стоимости ипотеки</div>
+                    <span class="app-tag">финансы</span>
+                    <span class="app-tag">калькулятор</span>
+                    <span class="timestamp">Изменен: 25.02.2025</span>
+                    <a href="mortgage-calculator.html" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0;"></a>
+                </div>
+                
+                <!-- Генератор паролей -->
+                <div class="app-item" data-tags="password generator security tools">
+                    <div class="app-name">password-generator.html</div>
+                    <div class="app-desc">Генератор надежных паролей с настраиваемыми параметрами</div>
+                    <span class="app-tag">безопасность</span>
+                    <span class="app-tag">утилиты</span>
+                    <span class="timestamp">Изменен: 20.02.2025</span>
+                    <a href="password-generator.html" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0;"></a>
+                </div>
+                
+                <!-- Калькулятор времени -->
+                <div class="app-item" data-tags="time calculator date duration">
+                    <div class="app-name">time-calculator.html</div>
+                    <div class="app-desc">Расчет разницы между датами и времени</div>
+                    <span class="app-tag">время</span>
+                    <span class="app-tag">калькулятор</span>
+                    <span class="timestamp">Изменен: 15.02.2025</span>
+                    <a href="time-calculator.html" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0;"></a>
+                </div>
+                
+                <!-- Добавьте здесь свои приложения -->
+            </div>
+            
+            <div class="prompt" style="margin-top: 20px;"><span class="command">echo</span> "Нажмите на приложение для запуска"</div>
+        </div>
+    </div>
+    
+    <script>
+        // Установка текущей даты
+        const now = new Date();
+        const dateOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('ru-RU', dateOptions);
+        
+        // Функция поиска
+        const searchInput = document.getElementById('search-input');
+        const appItems = document.querySelectorAll('.app-item');
+        
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            appItems.forEach(item => {
+                const appName = item.querySelector('.app-name').textContent.toLowerCase();
+                const appDesc = item.querySelector('.app-desc').textContent.toLowerCase();
+                const appTags = item.dataset.tags.toLowerCase();
+                
+                if (appName.includes(searchTerm) || 
+                    appDesc.includes(searchTerm) || 
+                    appTags.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+        
+        // Эффект терминала при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            const terminalBody = document.querySelector('.terminal-body');
+            terminalBody.style.opacity = '0';
+            
+            setTimeout(() => {
+                terminalBody.style.transition = 'opacity 0.5s ease';
+                terminalBody.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+</html>

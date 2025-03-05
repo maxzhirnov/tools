@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Deposit Calculator</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --text-color: #e6edf3;
+            --accent-color: #58a6ff;
+            --secondary-color: #30363d;
+            --success-color: #3fb950;
+            --warning-color: #d29922;
+            --danger-color: #f85149;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-mono);
+            line-height: 1.5;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .terminal {
+            border: 1px solid var(--secondary-color);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .terminal-header {
+            background-color: var(--secondary-color);
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .terminal-title {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .terminal-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .terminal-control {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .terminal-control.close {
+            background-color: var(--danger-color);
+        }
+        
+        .terminal-control.minimize {
+            background-color: var(--warning-color);
+        }
+        
+        .terminal-control.maximize {
+            background-color: var(--success-color);
+        }
+        
+        .terminal-body {
+            padding: 16px;
+            font-size: 14px;
+        }
+        
+        .prompt {
+            color: var(--success-color);
+            margin-bottom: 12px;
+        }
+        
+        .prompt::before {
+            content: "user@terminal:~$ ";
+        }
+        
+        .command {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        
+        .terminal-output {
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+        
+        .blink {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        .calculator-form {
+            background-color: rgba(48, 54, 61, 0.5);
+            border: 1px solid var(--secondary-color);
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--accent-color);
+        }
+        
+        .form-group label::before {
+            content: ">";
+            margin-right: 8px;
+            color: var(--success-color);
+        }
+        
+        .form-control {
+            width: 100%;
+            background-color: var(--bg-color);
+            border: 1px solid var(--secondary-color);
+            color: var(--text-color);
+            font-family: var(--font-mono);
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        
+        .btn {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            border: 1px solid var(--accent-color);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+        }
+        
+        .results {
+            background-color: rgba(48, 54, 61, 0.5);
+            border: 1px solid var(--secondary-color);
+            border-radius: 4px;
+            padding: 16px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .results-header {
+            color: var(--success-color);
+            margin-bottom: 12px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--secondary-color);
+            padding-bottom: 8px;
+        }
+        
+        .summary-item {
+            margin-bottom: 8px;
+        }
+        
+        .summary-label {
+            color: var(--accent-color);
+        }
+        
+        .summary-value {
+            color: var(--warning-color);
+            font-weight: bold;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 13px;
+        }
+        
+        th {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid var(--secondary-color);
+            color: var(--accent-color);
+        }
+        
+        td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+        }
+        
+        tr:hover td {
+            background-color: rgba(88, 166, 255, 0.1);
+        }
+        
+        .home-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        .home-link:hover {
+            text-decoration: underline;
+        }
+        
+        .home-link::before {
+            content: "< ";
+            color: var(--success-color);
+        }
+        
+        @media (max-width: 600px) {
+            .terminal-body {
+                padding: 12px;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="terminal-controls">
+                <div class="terminal-control close"></div>
+                <div class="terminal-control minimize"></div>
+                <div class="terminal-control maximize"></div>
+            </div>
+            <div class="terminal-title">deposit-calculator.sh</div>
+            <div></div>
+        </div>
+        <div class="terminal-body">
+            <div class="terminal-output">
+<span style="color: #58a6ff;">  _____                       _ _      _____      _      </span>
+<span style="color: #58a6ff;"> |  __ \                     (_) |    / ____|    | |     </span>
+<span style="color: #3fb950;"> | |  | | ___ _ __   ___  ___ _| |_  | |     __ _| | ___ </span>
+<span style="color: #3fb950;"> | |  | |/ _ \ '_ \ / _ \/ __| | __| | |    / _` | |/ __|</span>
+<span style="color: #d29922;"> | |__| |  __/ |_) | (_) \__ \ | |_  | |___| (_| | | (__ </span>
+<span style="color: #f85149;"> |_____/ \___| .__/ \___/|___/_|\__|  \_____\__,_|_|\___|</span>
+<span style="color: #f85149;">             | |                                          </span>
+<span style="color: #f85149;">             |_|                                          </span>
+
+Калькулятор доходности по вкладу со сложным процентом
+Версия 1.0.0 | Запущен: <span id="current-date">05.03.2025</span>
+            </div>
+            
+            <div class="prompt"><span class="command">./calculate-deposit.sh</span> --compound-interest</div>
+            
+            <div class="calculator-form">
+                <div class="form-group">
+                    <label for="initialAmount">Начальная сумма вклада (₽)</label>
+                    <input type="number" id="initialAmount" class="form-control" min="0" step="1000" value="100000">
+                </div>
+                
+                <div class="form-group">
+                    <label for="interestRate">Годовая процентная ставка (%)</label>
+                    <input type="number" id="interestRate" class="form-control" min="0" max="100" step="0.1" value="7.5">
+                </div>
+                
+                <div class="form-group">
+                    <label for="years">Срок вклада (лет)</label>
+                    <input type="number" id="years" class="form-control" min="1" max="50" step="1" value="3">
+                </div>
+                
+                <button id="calculate-btn" class="btn">Рассчитать</button>
+            </div>
+            
+            <div class="prompt"><span class="command">cat</span> results.txt</div>
+            
+            <div id="results" class="results">
+                <div class="results-header">Результаты расчета</div>
+                <div id="summary"></div>
+                <div id="tableContainer"></div>
+            </div>
+            
+            <a href="index.html" class="home-link">Вернуться на главную</a>
+        </div>
+    </div>
+
+    <script>
+        // Установка текущей даты
+        const now = new Date();
+        const dateOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('ru-RU', dateOptions);
+        
+        // Функция расчета вклада
+        function calculateDeposit() {
+            // Получаем значения из формы
+            const initialAmount = parseFloat(document.getElementById('initialAmount').value);
+            const annualInterestRate = parseFloat(document.getElementById('interestRate').value);
+            const years = parseInt(document.getElementById('years').value);
+            
+            // Проверка на корректность ввода
+            if (isNaN(initialAmount) || isNaN(annualInterestRate) || isNaN(years)) {
+                alert('Пожалуйста, введите корректные значения');
+                return;
+            }
+            
+            // Расчет ежемесячной процентной ставки
+            const monthlyInterestRate = annualInterestRate / 100 / 12;
+            const totalMonths = years * 12;
+            
+            // Массив для хранения данных по каждому месяцу
+            let monthlyData = [];
+            let currentAmount = initialAmount;
+            
+            // Расчет для каждого месяца
+            for (let month = 1; month <= totalMonths; month++) {
+                const interestForMonth = currentAmount * monthlyInterestRate;
+                currentAmount += interestForMonth;
+                
+                monthlyData.push({
+                    month,
+                    year: Math.ceil(month / 12),
+                    monthOfYear: ((month - 1) % 12) + 1,
+                    startAmount: currentAmount - interestForMonth,
+                    interest: interestForMonth,
+                    endAmount: currentAmount
+                });
+            }
+            
+            // Отображение результатов
+            displayResults(initialAmount, currentAmount, monthlyData, years);
+        }
+        
+        function displayResults(initialAmount, finalAmount, monthlyData, years) {
+            const resultsDiv = document.getElementById('results');
+            const summaryDiv = document.getElementById('summary');
+            const tableContainer = document.getElementById('tableContainer');
+            
+            // Отображаем блок с результатами
+            resultsDiv.style.display = 'block';
+            
+            // Формируем итоговую информацию
+            const totalInterest = finalAmount - initialAmount;
+            const formattedInitialAmount = initialAmount.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
+            const formattedFinalAmount = finalAmount.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
+            const formattedTotalInterest = totalInterest.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
+            
+            summaryDiv.innerHTML = `
+                <div class="summary-item">
+                    <span class="summary-label">Начальная сумма вклада:</span> 
+                    <span class="summary-value">${formattedInitialAmount}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Итоговая сумма через ${years} ${getYearText(years)}:</span> 
+                    <span class="summary-value">${formattedFinalAmount}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Общая сумма процентов:</span> 
+                    <span class="summary-value">${formattedTotalInterest}</span>
+                </div>
+            `;
+            
+            // Создаем таблицу с данными по годам
+            let yearlyData = [];
+            let currentYearData = null;
+            
+            // Группируем данные по годам
+            monthlyData.forEach(monthData => {
+                if (!currentYearData || currentYearData.year !== monthData.year) {
+                    if (currentYearData) {
+                        yearlyData.push(currentYearData);
+                    }
+                    currentYearData = {
+                        year: monthData.year,
+                        startAmount: monthData.month === 1 ? initialAmount : monthlyData[monthData.month - 2].endAmount,
+                        endAmount: monthData.endAmount,
+                        totalInterest: 0
+                    };
+                }
+                currentYearData.totalInterest += monthData.interest;
+                currentYearData.endAmount = monthData.endAmount;
+            });
+            
+            // Добавляем последний год
+            if (currentYearData) {
+                yearlyData.push(currentYearData);
+            }
+            
+            // Создаем таблицу
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Год</th>
+                            <th>Начальная сумма</th>
+                            <th>Проценты за год</th>
+                            <th>Конечная сумма</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            yearlyData.forEach(yearData => {
+                tableHTML += `
+                    <tr>
+                        <td>${yearData.year}</td>
+                        <td>${yearData.startAmount.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</td>
+                        <td>${yearData.totalInterest.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</td>
+                        <td>${yearData.endAmount.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            tableContainer.innerHTML = tableHTML;
+        }
+        
+        function getYearText(years) {
+            // Функция для правильного склонения слова "год"
+            const lastDigit = years % 10;
+            const lastTwoDigits = years % 100;
+            
+            if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+                return 'лет';
+            }
+            
+            if (lastDigit === 1) {
+                return 'год';
+            }
+            
+            if (lastDigit >= 2 && lastDigit <= 4) {
+                return 'года';
+            }
+            
+            return 'лет';
+        }
+        
+        // Обработчик события для кнопки расчета
+        document.getElementById('calculate-btn').addEventListener('click', calculateDeposit);
+        
+        // Запускаем расчет при загрузке страницы
+        window.onload = function() {
+            calculateDeposit();
+            
+            // Эффект терминала при загрузке
+            const terminalBody = document.querySelector('.terminal-body');
+            terminalBody.style.opacity = '0';
+            
+            setTimeout(() => {
+                terminalBody.style.transition = 'opacity 0.5s ease';
+                terminalBody.style.opacity = '1';
+            }, 100);
+        };
+    </script>
+</body>
+</html>
